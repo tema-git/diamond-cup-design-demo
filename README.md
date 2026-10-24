@@ -37,3 +37,17 @@ GSAP и ScrollTrigger 3.15.0 скопированы из официальног�
 ## Проверка перед публикацией
 
 Статически проверены синтаксис JavaScript, уникальность HTML-ID, внутренние якоря и существование всех локальных ресурсов. Браузерную проверку адаптивности, полного игрового пути, формы, курсора и анимаций выполняет основной агент перед публикацией.
+
+
+## Cursor interaction update — 2026-10-24
+
+All five main sections respond to pointer position through independent decorative layers. Native cursor, selectable text, input positions and click targets remain stable. Motion runs only while a visible scene settles after pointer input, and stops offscreen, on blur, hidden page, pointer mode changes and reduced-motion changes. Touch and keyboard focus receive immediate visual feedback.
+
+Navigation and CTA arrows share one gesture: north-east at rest, horizontal right on hover or keyboard focus. Page scroll never rotates UI arrows; other thematic scroll effects remain. Reduced motion switches arrow direction immediately and disables decorative displacement.
+
+- Hero: coffee photograph, stamp, bean and glass reflection.
+- Pause: cup illustration, coffee route and paper tag.
+- Barista: cup, steam, recipe emblem and light across the recipe; ingredient icons react without moving their buttons.
+- Location: coffee floor sign and broad moving light.
+- Contact: hand-drawn cup/steam and form shadow.
+- Ribbon: lateral response; arrows align right on hover.

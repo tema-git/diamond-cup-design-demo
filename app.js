@@ -193,69 +193,65 @@
   document.querySelector('#form-submit').disabled = false;
   window.addEventListener('pagehide', () => contactForm.reset());
 
-  const pointerScenes = [];
-  function addPointerScene(surface, layers) {
-    const state = { surface, layers, visible:false, rect:null, x:0, y:0, tx:0, ty:0, frame:0, lastTime:0 };
-    pointerScenes.push(state);
-    function render() {
-      for (let i = 0; i < layers.length; i++) {
-        const layer = layers[i];
-        layer.el.style.transform = `translate3d(${state.x*layer.move}px,${state.y*layer.move}px,0) rotate(${layer.base + state.x*layer.turn}deg)`;
-      }
+  // Pointer motion belongs to decorative layers; text and controls never move.
+  function setupSectionMotion(selectors) {
+    const fine = matchMedia('(hover: hover) and (pointer: fine)');
+    const scenes = selectors.map(selector => ({surface:document.querySelector(selector),x:0,y:0,tx:0,ty:0,frame:0,time:0,rect:null,visible:false}));
+    const allowed = () => fine.matches && !reducedMotion.matches && !document.hidden;
+    function paint(scene) {
+      scene.surface.style.setProperty('--pointer-x',scene.x.toFixed(4));
+      scene.surface.style.setProperty('--pointer-y',scene.y.toFixed(4));
     }
-    function tick(time) {
-      state.frame = 0;
-      const dt = state.lastTime ? Math.min(64,time-state.lastTime) : 16;
-      state.lastTime = time;
-      const ease = 1-Math.pow(.82,dt/16);
-      state.x += (state.tx-state.x)*ease; state.y += (state.ty-state.y)*ease;
-      if (Math.abs(state.tx-state.x)<.002 && Math.abs(state.ty-state.y)<.002) {
-        state.x = state.tx; state.y = state.ty; state.lastTime = 0;
-        for (let i = 0; i < layers.length; i++) layers[i].el.style.removeProperty('will-change');
-      } else state.frame = requestAnimationFrame(tick);
-      render();
+    function stop(scene) {
+      cancelAnimationFrame(scene.frame); scene.frame=0; scene.time=0;
+      scene.x=scene.y=scene.tx=scene.ty=0; scene.rect=null;
+      scene.surface.classList.remove('pointer-active','touch-active'); paint(scene);
     }
-    function start() {
-      if (!state.frame) {
-        for (let i = 0; i < layers.length; i++) layers[i].el.style.willChange = 'transform';
-        state.frame = requestAnimationFrame(tick);
-      }
+    function tick(scene,time) {
+      scene.frame=0;
+      if(!allowed() || !scene.visible) { stop(scene); return; }
+      const delta=scene.time?Math.min(3,(time-scene.time)/16.67):1; scene.time=time;
+      const ease=1-Math.pow(.78,delta);
+      scene.x+=(scene.tx-scene.x)*ease; scene.y+=(scene.ty-scene.y)*ease;
+      if(Math.abs(scene.tx-scene.x)+Math.abs(scene.ty-scene.y)<.002) {
+        scene.x=scene.tx; scene.y=scene.ty; scene.time=0;
+      } else scene.frame=requestAnimationFrame(time=>tick(scene,time));
+      paint(scene);
     }
-    state.stop = () => {
-      cancelAnimationFrame(state.frame); state.frame = 0; state.lastTime = 0;
-      state.x = state.y = state.tx = state.ty = 0;
-      for (let i = 0; i < layers.length; i++) { layers[i].el.style.removeProperty('transform'); layers[i].el.style.removeProperty('will-change'); }
-    };
-    surface.addEventListener('pointerenter', () => { state.rect = null; }, {passive:true});
-    surface.addEventListener('pointermove', event => {
-      if (!finePointer.matches || reducedMotion.matches || !state.visible || document.hidden || event.pointerType === 'touch') return;
-      if (!state.rect) state.rect = surface.getBoundingClientRect();
-      state.tx = Math.max(-1,Math.min(1,(event.clientX-state.rect.left)/state.rect.width*2-1));
-      state.ty = Math.max(-1,Math.min(1,(event.clientY-state.rect.top)/state.rect.height*2-1));
-      start();
-    }, {passive:true});
-    surface.addEventListener('pointerleave', () => { state.rect = null; if (state.frame || state.x || state.y) { state.tx = state.ty = 0; start(); } }, {passive:true});
+    function schedule(scene) { if(!scene.frame && allowed() && scene.visible) scene.frame=requestAnimationFrame(time=>tick(scene,time)); }
+    function move(scene,event) {
+      if(!allowed() || !scene.visible || event.pointerType==='touch') return;
+      if(!scene.rect) scene.rect=scene.surface.getBoundingClientRect();
+      scene.tx=Math.max(-1,Math.min(1,(event.clientX-scene.rect.left)/scene.rect.width*2-1));
+      scene.ty=Math.max(-1,Math.min(1,(event.clientY-scene.rect.top)/scene.rect.height*2-1));
+      scene.surface.classList.add('pointer-active'); schedule(scene);
+    }
+    for(const scene of scenes) {
+      scene.surface.classList.add('pointer-scene');
+      scene.surface.addEventListener('pointerenter',event=>{scene.rect=null;move(scene,event);},{passive:true});
+      scene.surface.addEventListener('pointermove',event=>move(scene,event),{passive:true});
+      scene.surface.addEventListener('pointerleave',()=>{scene.rect=null;scene.tx=scene.ty=0;scene.surface.classList.remove('pointer-active');schedule(scene);},{passive:true});
+      scene.surface.addEventListener('pointercancel',()=>stop(scene),{passive:true});
+      scene.surface.addEventListener('focusin',()=>scene.surface.classList.add('focus-active'));
+      scene.surface.addEventListener('focusout',event=>{if(!scene.surface.contains(event.relatedTarget))scene.surface.classList.remove('focus-active');});
+      scene.surface.addEventListener('pointerdown',event=>{if(event.pointerType==='touch')scene.surface.classList.add('touch-active');},{passive:true});
+      scene.surface.addEventListener('pointerup',()=>scene.surface.classList.remove('touch-active'),{passive:true});
+    }
+    if(window.IntersectionObserver) {
+      const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
+        const scene=scenes.find(item=>item.surface===entry.target);
+        scene.visible=entry.isIntersecting; if(!scene.visible)stop(scene);
+      }));
+      scenes.forEach(scene=>observer.observe(scene.surface));
+    } else scenes.forEach(scene=>scene.visible=true);
+    const reset=()=>scenes.forEach(stop);
+    window.addEventListener('scroll',()=>scenes.forEach(scene=>scene.rect=null),{passive:true});
+    window.addEventListener('resize',reset,{passive:true});
+    window.addEventListener('blur',reset); window.addEventListener('pagehide',reset);
+    document.addEventListener('visibilitychange',reset);
+    reducedMotion.addEventListener('change',reset); fine.addEventListener('change',reset);
   }
-  addPointerScene(document.querySelector('.hero'), [
-    {el:document.querySelector('.hero-picture'),move:12,turn:3.5,base:0},
-    {el:document.querySelector('.coffee-stamp'),move:-15,turn:-12,base:-13},
-    {el:document.querySelector('.hero-bean'),move:-24,turn:22,base:13}
-  ]);
-  addPointerScene(document.querySelector('.cup-stage'), [{el:cup,move:11,turn:5,base:0}]);
-  const sceneObserver = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      const scene = pointerScenes.find(item => item.surface === entry.target);
-      scene.visible = entry.isIntersecting;
-      if (!scene.visible) scene.stop();
-    }
-  });
-  for (const scene of pointerScenes) sceneObserver.observe(scene.surface);
-  function stopPointerScenes() { for (const scene of pointerScenes) { scene.rect = null; scene.stop(); } }
-  reducedMotion.addEventListener('change', stopPointerScenes);
-  finePointer.addEventListener('change', stopPointerScenes);
-  window.addEventListener('resize', stopPointerScenes, {passive:true});
-  document.addEventListener('visibilitychange', stopPointerScenes);
-  window.addEventListener('scroll', () => { for (const scene of pointerScenes) scene.rect = null; }, {passive:true});
+  setupSectionMotion(['.hero','.coffee-ribbon','.pause-section','.barista-section','.visit-section','.contact-section']);
 
   function refreshScroll() { if (window.ScrollTrigger) window.ScrollTrigger.refresh(); }
   if (window.gsap && window.ScrollTrigger) {
@@ -267,18 +263,12 @@
       const wide = context.conditions.wide;
       gsap.to('.hero-scroll-layer', {y:wide?70:35,rotation:wide?-5:-3,ease:'none',scrollTrigger:{trigger:'.hero-scene',start:'clamp(top 25%)',end:'bottom top',scrub:.6}});
       gsap.fromTo('.ribbon-track', {x:wide?160:40}, {x:wide?-180:-200,ease:'none',scrollTrigger:{trigger:'.coffee-ribbon',start:'top bottom',end:'bottom top',scrub:.5}});
-      gsap.to('.ribbon-track svg', {rotation:180,ease:'none',scrollTrigger:{trigger:'.coffee-ribbon',start:'top bottom',end:'bottom top',scrub:.5}});
       const route = document.querySelector('.coffee-route');
       const length = route.getTotalLength();
       gsap.fromTo(route, {strokeDasharray:length,strokeDashoffset:length}, {strokeDashoffset:0,ease:'none',scrollTrigger:{trigger:'.ritual-layout',start:'top 90%',end:'center 45%',scrub:.6}});
       gsap.fromTo('.ritual-cup', {y:35,rotation:-8,svgOrigin:'365 208'}, {y:-15,rotation:8,svgOrigin:'365 208',ease:'none',scrollTrigger:{trigger:'.ritual-layout',start:'top bottom',end:'bottom top',scrub:.65}});
       gsap.fromTo('.recipe-ticket', {rotation:-4,y:22}, {rotation:0,y:0,ease:'none',scrollTrigger:{trigger:'.order-desk',start:'top 95%',end:'top 40%',scrub:.5}});
-      gsap.fromTo('.wayfinding-floor', {x:-25,rotation:-13}, {x:12,rotation:-3,ease:'none',scrollTrigger:{trigger:'.wayfinding',start:'top bottom',end:'bottom 20%',scrub:.65}});
-      gsap.to('.floor-arrow', {rotation:90,ease:'none',scrollTrigger:{trigger:'.wayfinding',start:'top bottom',end:'bottom top',scrub:.45}});
-      document.querySelectorAll('.scroll-arrow').forEach(arrow => {
-        if (arrow.closest('[hidden]') || arrow.closest('dialog')) return;
-        gsap.fromTo(arrow, {rotation:0}, {rotation:360,ease:'none',scrollTrigger:{trigger:arrow.closest('section')||arrow.parentElement,start:'clamp(top bottom)',end:'clamp(bottom top)',scrub:.45}});
-      });
+      gsap.fromTo('.wayfinding-floor', {x:-25}, {x:12,ease:'none',scrollTrigger:{trigger:'.wayfinding',start:'top bottom',end:'bottom 20%',scrub:.65}});
     });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshScroll);
     window.addEventListener('load', refreshScroll, {once:true});
