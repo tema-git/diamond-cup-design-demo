@@ -253,6 +253,30 @@
   }
   setupSectionMotion(['.hero','.coffee-ribbon','.pause-section','.barista-section','.visit-section','.contact-section']);
 
+  // Two identical tracks make a continuous loop; stop it when it cannot be seen.
+  const ribbon=document.querySelector('.coffee-ribbon');
+  const ribbonToggle=ribbon.querySelector('.ribbon-toggle');
+  let ribbonVisible=false, ribbonPaused=false, ribbonFocused=true;
+  function syncRibbon() {
+    const running=ribbonVisible && !ribbonPaused && ribbonFocused && !document.hidden && !reducedMotion.matches;
+    ribbon.classList.toggle('is-running',running);
+    ribbonToggle.disabled=reducedMotion.matches;
+    ribbonToggle.setAttribute('aria-pressed',String(ribbonPaused));
+    ribbonToggle.setAttribute('aria-label',reducedMotion.matches?'Анимация ленты отключена настройками устройства':ribbonPaused?'Продолжить кофейную ленту':'Остановить кофейную ленту');
+    ribbonToggle.querySelector('.ribbon-toggle-label').textContent=reducedMotion.matches?'Без анимации':ribbonPaused?'Продолжить':'Пауза';
+    ribbonToggle.querySelector('.ribbon-toggle-icon').textContent=ribbonPaused?'▶':'Ⅱ';
+  }
+  ribbonToggle.addEventListener('click',()=>{ribbonPaused=!ribbonPaused;syncRibbon();});
+  if(window.IntersectionObserver) new IntersectionObserver(entries=>{ribbonVisible=entries[0].isIntersecting;syncRibbon();}).observe(ribbon);
+  else {ribbonVisible=true;syncRibbon();}
+  document.addEventListener('visibilitychange',syncRibbon);
+  reducedMotion.addEventListener('change',syncRibbon);
+  window.addEventListener('blur',()=>{ribbonFocused=false;syncRibbon();});
+  window.addEventListener('focus',()=>{ribbonFocused=true;syncRibbon();});
+  window.addEventListener('pagehide',()=>ribbon.classList.remove('is-running'));
+  window.addEventListener('pageshow',syncRibbon);
+  syncRibbon();
+
   function refreshScroll() { if (window.ScrollTrigger) window.ScrollTrigger.refresh(); }
   if (window.gsap && window.ScrollTrigger) {
     const gsap = window.gsap;
@@ -262,13 +286,11 @@
       if (context.conditions.reduce) return;
       const wide = context.conditions.wide;
       gsap.to('.hero-scroll-layer', {y:wide?70:35,rotation:wide?-5:-3,ease:'none',scrollTrigger:{trigger:'.hero-scene',start:'clamp(top 25%)',end:'bottom top',scrub:.6}});
-      gsap.fromTo('.ribbon-track', {x:wide?160:40}, {x:wide?-180:-200,ease:'none',scrollTrigger:{trigger:'.coffee-ribbon',start:'top bottom',end:'bottom top',scrub:.5}});
       const route = document.querySelector('.coffee-route');
       const length = route.getTotalLength();
       gsap.fromTo(route, {strokeDasharray:length,strokeDashoffset:length}, {strokeDashoffset:0,ease:'none',scrollTrigger:{trigger:'.ritual-layout',start:'top 90%',end:'center 45%',scrub:.6}});
       gsap.fromTo('.ritual-cup', {y:35,rotation:-8,svgOrigin:'365 208'}, {y:-15,rotation:8,svgOrigin:'365 208',ease:'none',scrollTrigger:{trigger:'.ritual-layout',start:'top bottom',end:'bottom top',scrub:.65}});
       gsap.fromTo('.recipe-ticket', {rotation:-4,y:22}, {rotation:0,y:0,ease:'none',scrollTrigger:{trigger:'.order-desk',start:'top 95%',end:'top 40%',scrub:.5}});
-      gsap.fromTo('.wayfinding-floor', {x:-25}, {x:12,ease:'none',scrollTrigger:{trigger:'.wayfinding',start:'top bottom',end:'bottom 20%',scrub:.65}});
     });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshScroll);
     window.addEventListener('load', refreshScroll, {once:true});

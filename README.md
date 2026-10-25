@@ -16,7 +16,7 @@
 
 - Постоянно доступная sticky-шапка и видимая вне мобильного меню кнопка «Контакты».
 - Реакция hero и игрового стакана на курсор при наличии точного указателя; обычный курсор сохранён.
-- GSAP/ScrollTrigger: движение изображения, кофейной полосы, прорисовка линии, разворот стакана/указателя и вращение стрелок. Native scroll, без перехвата прокрутки.
+- GSAP/ScrollTrigger: движение изображения, прорисовка кофейной линии и разворот стакана. Стрелки интерфейса не вращаются от прокрутки. Native scroll, без перехвата прокрутки.
 - Отдельная игра-бариста: три напитка, рецепты по шагам, проверка порядка ингредиентов, отображение слоёв, прогресс, победа и перезапуск. Без гонки на время; используются нативные кнопки.
 - Контрастное изменение только цвета букв при выделении текста, прозрачный фон выделения.
 - Демоформа с проверкой имени, российского телефона и темы. Нет сети, аналитики или хранения персональных данных. Поля без name, кнопка отправки недоступна до установки JS-обработчика. Успех очищает введённые значения. Повторное заполнение доступно.
@@ -51,3 +51,9 @@ Navigation and CTA arrows share one gesture: north-east at rest, horizontal righ
 - Location: coffee floor sign and broad moving light.
 - Contact: hand-drawn cup/steam and form shadow.
 - Ribbon: lateral response; arrows align right on hover.
+
+## Update — 2026-10-25
+
+The headline now has two deliberately unbroken line groups, sized to its column. The location eyebrow has been removed; the actual address remains below. The coffee ribbon contains six complete phrases in two identical groups, with a native pause button and offscreen/reduced-motion suspension. The orange floor sign is now a real, stationary map link, while only its internal pattern moves. Hero artwork, steam, the pause illustration and barista equipment have stronger themed responses.
+
+See DESIGN.md for the retained brand direction, consulted sources and interaction map. Browser QA for this update is performed by the main agent before publishing.

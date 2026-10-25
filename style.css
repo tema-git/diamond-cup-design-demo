@@ -22,8 +22,8 @@ dialog{border:0;width:min(640px,calc(100% - 36px));max-height:calc(100dvh - 40px
 .contact-link::selection,.contact-link:hover::selection{background:transparent;color:#102b68}
 
 /* Arrow direction is one consistent hover/focus gesture, independent of scroll. */
-.scroll-arrow,.ribbon-track svg,.floor-arrow{rotate:none;transform:rotate(0deg);transform-origin:50% 50%;transition:transform .24s ease;pointer-events:none}
-:where(a,button):is(:hover,:focus-visible,:active) .scroll-arrow,.coffee-ribbon:hover .ribbon-track svg,.visit-section:is(:hover,:focus-within) .floor-arrow{rotate:none;transform:rotate(45deg)}
+.scroll-arrow,.floor-arrow{rotate:none;transform:rotate(0deg);transform-origin:50% 50%;transition:transform .24s ease;pointer-events:none}
+:where(a,button):is(:hover,:focus-visible,:active) .scroll-arrow,.wayfinding-floor:is(:hover,:focus-visible,:active) .floor-arrow{rotate:none;transform:rotate(45deg)}
 .wayfinding-floor{transform:rotate(0deg)}
 /* Each section has its own physical response; only artwork moves. */
 .pointer-scene{--pointer-x:0;--pointer-y:0}
@@ -48,11 +48,57 @@ dialog{border:0;width:min(640px,calc(100% - 36px));max-height:calc(100dvh - 40px
 .ingredient-controls button:is(:hover,:focus-visible,:active):not([aria-disabled=true]) .ingredient-icon{translate:0 -5px;rotate:8deg}
 .wayfinding{isolation:isolate;box-shadow:calc(var(--pointer-x)*-9px) calc(8px + var(--pointer-y)*-6px) 0 #2a1c1617}
 .wayfinding::before{content:'';position:absolute;inset:-30%;z-index:-1;background:linear-gradient(120deg,transparent 30%,#fff9dcbd 50%,transparent 70%);translate:calc(var(--pointer-x)*120px) calc(var(--pointer-y)*45px);pointer-events:none}
-.wayfinding-floor{translate:calc(var(--pointer-x)*20px) calc(var(--pointer-y)*10px)}
+.wayfinding-floor{translate:none}
 .contact-copy{position:relative}
 .contact-steam-art{width:min(340px,95%);height:auto;max-height:175px;margin-top:27px;fill:none;stroke:#ff945a;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;translate:calc(var(--pointer-x)*25px) calc(var(--pointer-y)*10px);rotate:calc(var(--pointer-x)*3deg);pointer-events:none}
 .contact-steam{translate:calc(var(--pointer-x)*-25px) calc(var(--pointer-y)*-18px)}
 .contact-form-panel{box-shadow:calc(var(--pointer-x)*-12px) calc(9px + var(--pointer-y)*-5px) 0 #ff641f50;transition:box-shadow .12s}
 .contact-form-panel:focus-within{box-shadow:7px 7px 0 #ff641f}
 @media(hover:none),(pointer:coarse){.contact-form-panel:focus-within{box-shadow:4px 4px 0 #ff641f}.pointer-scene.touch-active .contact-steam-art,.pointer-scene.focus-active .contact-steam-art{stroke:#ffb480}}
-@media(prefers-reduced-motion:reduce){.hero-picture,.coffee-stamp,.hero-bean,.ritual-illustration>svg,.ritual-tag,.ribbon-track,.mixing-cup,.cup-steam,.ticket-top svg,.wayfinding-floor,.contact-steam-art,.contact-steam,.ingredient-icon{translate:none!important;rotate:none!important}.hero-picture::after,.wayfinding::before,.recipe-ticket::after{translate:none!important}.scroll-arrow,.ribbon-track svg,.floor-arrow{transform:rotate(0deg)!important;transition:none!important}:where(a,button):is(:hover,:focus-visible,:active) .scroll-arrow,.coffee-ribbon:hover .ribbon-track svg,.visit-section:is(:hover,:focus-within) .floor-arrow{transform:rotate(45deg)!important}}
+@media(prefers-reduced-motion:reduce){.hero-picture,.coffee-stamp,.hero-bean,.ritual-illustration>svg,.ritual-tag,.ribbon-track,.mixing-cup,.cup-steam,.ticket-top svg,.wayfinding-floor,.contact-steam-art,.contact-steam,.ingredient-icon{translate:none!important;rotate:none!important}.hero-picture::after,.wayfinding::before,.recipe-ticket::after{translate:none!important}.scroll-arrow,.floor-arrow{transform:rotate(0deg)!important;transition:none!important}:where(a,button):is(:hover,:focus-visible,:active) .scroll-arrow,.wayfinding-floor:is(:hover,:focus-visible,:active) .floor-arrow{transform:rotate(45deg)!important}}
+
+/* 25 Oct: short, intentional headline lines and an uninterrupted coffee ribbon. */
+.hero-copy{min-width:0;container-type:inline-size}
+.hero h1{font-size:clamp(44px,16.6cqw,108px);line-height:1.04;letter-spacing:-.055em}
+.headline-line{display:block;white-space:nowrap}
+.hero .demo-label{margin-bottom:30px}
+.coffee-ribbon{padding:26px 0 13px}
+.ribbon-track{display:block;min-width:0;width:max-content;translate:calc(-80px + var(--pointer-x)*30px) 0}
+.ribbon-loop{display:flex;width:max-content;animation:coffee-loop 88s linear infinite;animation-play-state:paused}
+.coffee-ribbon.is-running .ribbon-loop{animation-play-state:running}
+.ribbon-group{display:flex;align-items:center;gap:36px;flex-shrink:0;padding-right:36px}
+.ribbon-group>span{white-space:nowrap}
+.ribbon-track .ribbon-bean{width:43px;height:43px;flex:none;rotate:calc(var(--pointer-x)*20deg);transform:none;stroke-width:2.7;pointer-events:none}
+.ribbon-controls{display:flex;justify-content:flex-end;margin-top:12px}
+.ribbon-toggle{font-size:16px;line-height:1.3;display:inline-flex;gap:9px;align-items:center;min-height:44px;border:1px solid #2a1c1659;background:transparent;padding:8px 13px;border-radius:4px}
+.ribbon-toggle:hover,.ribbon-toggle:focus-visible{background:var(--ink);color:var(--cream)}
+.ribbon-toggle-icon{width:16px;text-align:center;font-size:17px}
+.ribbon-toggle:disabled{opacity:.75;cursor:default}
+@keyframes coffee-loop{to{transform:translateX(-50%)}}
+/* Moving artwork is clearly visible; supporting copy and controls are anchored. */
+.hero-picture{translate:calc(var(--pointer-x)*28px) calc(var(--pointer-y)*18px)}
+.hero-bean{translate:calc(var(--pointer-x)*-48px) calc(var(--pointer-y)*-32px)}
+.ritual-illustration>svg{translate:calc(var(--pointer-x)*32px) calc(var(--pointer-y)*22px);rotate:calc(var(--pointer-x)*4deg)}
+.ritual-steam{translate:calc(var(--pointer-x)*-20px) calc(var(--pointer-y)*-18px);transition:stroke .2s}
+.pause-section:is(.pointer-active,.focus-active,.touch-active) .ritual-steam{stroke:#dc4709;stroke-width:6}
+.barista-scoop{position:absolute;left:5%;top:30%;width:clamp(54px,6vw,88px);height:auto;fill:#fff6df;stroke:var(--ink);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;translate:calc(var(--pointer-x)*-25px) calc(var(--pointer-y)*-23px);rotate:calc(-17deg + var(--pointer-x)*16deg);pointer-events:none}
+.mixing-cup{translate:calc(var(--pointer-x)*29px) calc(var(--pointer-y)*19px)}
+.cup-steam{translate:calc(var(--pointer-x)*-24px) calc(var(--pointer-y)*-21px)}
+.ticket-top svg{translate:calc(var(--pointer-x)*-13px) calc(var(--pointer-y)*10px);rotate:calc(var(--pointer-x)*25deg)}
+/* The entire floor sign is a real, stationary route link. */
+.wayfinding-floor{width:100%;margin-right:0;gap:15px;padding:18px;min-height:112px;transform:none;translate:none;isolation:isolate;overflow:hidden;border:2px solid transparent;border-radius:4px;transition:background .2s,border-color .2s;cursor:pointer}
+.wayfinding-floor::before{content:'';position:absolute;inset:-50%;z-index:-1;background:repeating-linear-gradient(115deg,transparent 0 60px,#fff4df3b 60px 64px,transparent 64px 125px);translate:calc(var(--pointer-x)*45px) calc(var(--pointer-y)*25px);pointer-events:none}
+.wayfinding-floor strong{font-size:clamp(58px,6vw,82px);line-height:1;flex-shrink:0}
+.wayfinding-floor .floor-label{font-size:23px;line-height:1.2;flex:1;min-width:0}
+.floor-label>span{display:block;font-size:16px;font-weight:600;line-height:1.35;margin-top:6px}
+.wayfinding-floor .floor-arrow{width:45px;height:45px;flex-shrink:0;margin:0}
+.wayfinding-floor:is(:hover,:focus-visible,:active){background:#ff8c51;border-color:var(--ink)}
+.wayfinding-floor:is(:hover,:focus-visible,:active) .floor-arrow{transform:rotate(45deg)}
+.wayfinding-number{text-shadow:calc(var(--pointer-x)*7px) calc(var(--pointer-y)*5px) 0 #ff641f61}
+.contact-steam-art{translate:calc(var(--pointer-x)*32px) calc(var(--pointer-y)*17px);rotate:calc(var(--pointer-x)*4deg)}
+.contact-steam{translate:calc(var(--pointer-x)*-33px) calc(var(--pointer-y)*-27px)}
+.contact-section:is(.pointer-active,.focus-active,.touch-active) .contact-steam-art{stroke:#ffb47f;stroke-width:4.5}
+@media(max-width:1120px) and (min-width:681px){.hero h1{font-size:clamp(37px,16.6cqw,108px)}}
+@media(max-width:680px){.hero h1{font-size:clamp(43px,16.6cqw,90px)}.hero .demo-label{margin-bottom:26px}.ribbon-group{gap:26px;padding-right:26px}.ribbon-track .ribbon-bean{width:34px;height:34px}.barista-scoop{width:54px;left:6%;top:28%}.wayfinding-floor{gap:11px;padding:15px;min-height:100px}.wayfinding-floor strong{font-size:64px}.wayfinding-floor .floor-label{font-size:22px}.wayfinding-floor .floor-arrow{width:38px;height:38px}}
+@media(max-width:360px){.hero h1{font-size:clamp(40px,16.2cqw,48px)}.wayfinding-floor{padding:12px;gap:10px}.wayfinding-floor strong{font-size:56px}.wayfinding-floor .floor-label{font-size:20px}.floor-label>span{font-size:16px}.wayfinding-floor .floor-arrow{width:31px;height:31px}}
+@media(prefers-reduced-motion:reduce){.ribbon-loop{animation:none!important}.ribbon-track{translate:none!important}.barista-scoop,.ritual-steam,.wayfinding-floor::before{translate:none!important;rotate:none!important}.wayfinding-number{text-shadow:none}.ribbon-track .ribbon-bean{rotate:none!important}}
