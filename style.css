@@ -100,3 +100,5 @@ h1,h2,h3,.hero h1,.menu-group h3,.recipe-ticket h3,.ritual-copy h2{letter-spacin
 @keyframes coffee-bean-float{0%,100%{translate:0 0}50%{translate:0 -9px}}
 @media(max-width:680px){.drink-row::before{inset:0 -8px}}
 @media(prefers-reduced-motion:reduce){.hero-steam path,.ritual-steam,.cup-steam,.contact-steam,.hero-bean{translate:none!important}.menu-decoration{rotate:0deg!important}.cup-stage::before{transform:none!important}.wayfinding-floor::before{transform:none!important}.hero-scene::after,.ritual-illustration::before{display:none}.drink-row::before{transform:none}}
+
+@media(max-width:680px),(hover:none),(pointer:coarse){.wayfinding::before{display:none}}
