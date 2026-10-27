@@ -222,15 +222,13 @@
         const title = query ? `${category.id === 'coffee' ? 'Кофе' : category.id === 'tea' ? 'Не кофе' : 'Холодное'} · ${section.title}` : section.title;
         const sizes = section.sizes;
         const rows = items.map(item => {
-          const isEspresso = item.name.startsWith('Эспрессо (');
           const prices = sizes.map(size => {
             const price = item.prices[size];
-            const volume = isEspresso ? 40 : menuData.volumes[size];
-            return price === undefined ? `<span class="drink-price unavailable"><span class="visually-hidden">Размер ${size} отсутствует</span><span aria-hidden="true">—</span></span>` : `<span class="drink-price${sizes.length === 1 ? ' single-price' : ''}">${sizes.length === 1 ? `<small class="price-volume">${volume} мл</small>` : `<span class="visually-hidden">${volume} мл: </span>`}<span>${price}<span class="price-unit" aria-hidden="true"> ₽</span><span class="visually-hidden"> рублей</span></span></span>`;
+            return price === undefined ? `<span class="drink-price unavailable"><span class="visually-hidden">Размер ${size} отсутствует</span><span aria-hidden="true">—</span></span>` : `<span class="drink-price${sizes.length === 1 ? ' single-price' : ''}">${sizes.length === 1 ? `<small class="price-size">${size}</small>` : `<span class="visually-hidden">Размер ${size}: </span>`}<span>${price}<span class="price-unit" aria-hidden="true"> ₽</span><span class="visually-hidden"> рублей</span></span></span>`;
           }).join('');
           return `<div class="drink-row"><div class="drink-main"><p class="drink-name">${escape(item.name)}${item.isNew ? '<span class="new-badge">Новинка</span>' : ''}</p><div class="drink-prices">${prices}</div></div>${item.note ? `<p class="drink-note">${escape(item.note)}</p>` : ''}${item.description ? `<p class="drink-description">${escape(item.description)}</p>` : ''}</div>`;
         }).join('');
-        groups.push(`<section class="menu-group" aria-label="${escape(title)}"><div class="menu-group-header"><h3>${escape(title)}</h3><div class="menu-sizes${sizes.length === 1 ? ' single-size' : ''}" aria-hidden="true">${sizes.map(size => `<span>${size}<small>${menuData.volumes[size]} мл</small></span>`).join('')}</div></div><div class="drink-list">${rows}</div></section>`);
+        groups.push(`<section class="menu-group" aria-label="${escape(title)}"><div class="menu-group-header"><h3>${escape(title)}</h3><div class="menu-sizes${sizes.length === 1 ? ' single-size' : ''}" aria-hidden="true">${sizes.map(size => `<span>${size}</span>`).join('')}</div></div><div class="drink-list">${rows}</div></section>`);
       }
     }
     menuPanel.innerHTML = groups.join('');
