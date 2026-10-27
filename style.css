@@ -68,3 +68,8 @@ h1,h2,h3,.hero h1,.menu-group h3,.recipe-ticket h3,.ritual-copy h2{letter-spacin
 @media(min-width:681px) and (max-width:1200px){.brand{width:175px}}
 @media(max-width:680px){.brand{width:158px}}
 @media(max-width:390px){.brand{width:139px}}
+
+/* Interface arrows are geometry, never font glyphs or emoji. */
+.scroll-arrow{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;transform-origin:center;transform-box:view-box}
+.reset-icon,.close-icon{display:inline-block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}.reset-icon{margin-left:12px}.close-icon{margin:auto}.dialog-close{display:grid;place-items:center}.search-field>button{display:grid;place-items:center}
+.ritual-copy{container-type:inline-size;width:100%}.ritual-copy h2{font-size:clamp(29px,10.6cqw,62px);line-height:1.14}.pause-line{display:block;white-space:nowrap}

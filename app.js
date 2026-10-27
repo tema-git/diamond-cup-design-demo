@@ -1,5 +1,6 @@
 (() => {
   'use strict';
+  let scrollRefreshFrame = 0;
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
   const navigation = document.querySelector('#navigation');
@@ -336,7 +337,7 @@
     document.addEventListener('visibilitychange',reset);
     reducedMotion.addEventListener('change',reset); fine.addEventListener('change',reset);
   }
-  setupSectionMotion(['.hero','.coffee-ribbon','.menu-section','.pause-section','.barista-section','.visit-section','.contact-section']);
+  setupSectionMotion(['.hero','.coffee-ribbon','.menu-section','.pause-section','.barista-section','.latte-section','.visit-section','.contact-section']);
 
   // Two identical tracks make a continuous loop; stop it when it cannot be seen.
   const ribbon=document.querySelector('.coffee-ribbon');
@@ -355,7 +356,20 @@
   window.addEventListener('pageshow',syncRibbon);
   syncRibbon();
 
-  function refreshScroll() { if (window.ScrollTrigger) window.ScrollTrigger.refresh(); }
+  function refreshScroll() {
+    if (!window.ScrollTrigger || scrollRefreshFrame) return;
+    scrollRefreshFrame = requestAnimationFrame(() => {
+      scrollRefreshFrame = 0;
+      const scrollTrigger = window.ScrollTrigger;
+      // These unpinned scenes can be measured at the current scroll position.
+      // A global refresh scrolls to zero during measurement and can jump on iOS.
+      scrollTrigger.update();
+      for (const instance of scrollTrigger.getAll()) instance.refresh();
+      scrollTrigger.update();
+    });
+  }
+  window.addEventListener('pagehide', () => { cancelAnimationFrame(scrollRefreshFrame); scrollRefreshFrame = 0; });
+  window.addEventListener('pageshow', refreshScroll);
   if (window.gsap && window.ScrollTrigger) {
     const gsap = window.gsap;
     gsap.registerPlugin(window.ScrollTrigger);
