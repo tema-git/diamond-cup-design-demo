@@ -340,18 +340,11 @@
 
   // Two identical tracks make a continuous loop; stop it when it cannot be seen.
   const ribbon=document.querySelector('.coffee-ribbon');
-  const ribbonToggle=ribbon.querySelector('.ribbon-toggle');
-  let ribbonVisible=false, ribbonPaused=false, ribbonFocused=true;
+  let ribbonVisible=false, ribbonFocused=true;
   function syncRibbon() {
-    const running=ribbonVisible && !ribbonPaused && ribbonFocused && !document.hidden && !reducedMotion.matches;
+    const running=ribbonVisible && ribbonFocused && !document.hidden && !reducedMotion.matches;
     ribbon.classList.toggle('is-running',running);
-    ribbonToggle.disabled=reducedMotion.matches;
-    ribbonToggle.setAttribute('aria-pressed',String(ribbonPaused));
-    ribbonToggle.setAttribute('aria-label',reducedMotion.matches?'Анимация ленты отключена настройками устройства':ribbonPaused?'Продолжить кофейную ленту':'Остановить кофейную ленту');
-    ribbonToggle.querySelector('.ribbon-toggle-label').textContent=reducedMotion.matches?'Без анимации':ribbonPaused?'Продолжить':'Пауза';
-    ribbonToggle.querySelector('.ribbon-toggle-icon').textContent=ribbonPaused?'▶':'Ⅱ';
   }
-  ribbonToggle.addEventListener('click',()=>{ribbonPaused=!ribbonPaused;syncRibbon();});
   if(window.IntersectionObserver) new IntersectionObserver(entries=>{ribbonVisible=entries[0].isIntersecting;syncRibbon();}).observe(ribbon);
   else {ribbonVisible=true;syncRibbon();}
   document.addEventListener('visibilitychange',syncRibbon);

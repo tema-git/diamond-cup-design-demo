@@ -71,3 +71,7 @@ Navigation and CTA arrows share one gesture: north-east at rest, horizontal righ
 The headline now has two deliberately unbroken line groups, sized to its column. The location eyebrow has been removed; the actual address remains below. The coffee ribbon contains six complete phrases in two identical groups, with a native pause button and offscreen/reduced-motion suspension. The orange floor sign is now a real, stationary map link, while only its internal pattern moves. Hero artwork, steam, the pause illustration and barista equipment have stronger themed responses.
 
 See DESIGN.md for the retained brand direction, consulted sources and interaction map. Browser QA for this update is performed by the main agent before publishing.
+
+## Уточнение — 27 октября 2026, вторая версия
+
+По запросу пользователя исходный логотип оставлен без изменений. Увеличено расстояние между буквами в крупных заголовках, стикер и адрес оформлены в две строки, разделитель меню усилен. Кнопка паузы ленты удалена; hover/focus и reduced motion по-прежнему останавливают движение. Для favicon добавлены новые имена SVG/PNG, чтобы браузер загрузил мятную иконку вместо закэшированной оранжевой. Все правки сверены с гайдлайном бренда.
