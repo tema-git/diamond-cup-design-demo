@@ -44,3 +44,4 @@ img,svg{max-width:100%}img{display:block}svg{display:block}a{color:inherit;text-
 .price-unit{font-size:14px}@media(max-width:390px){.menu-sizes>span,.drink-price{width:56px}.single-price{width:auto;min-width:73px}}
 .hero-copy{container-type:inline-size;min-width:0}.hero h1{font-size:clamp(56px,20cqw,116px)}
 @media(max-width:680px){.hero h1{font-size:clamp(57px,19.5cqw,106px)}}
+@media(min-width:681px){.hero h1{font-size:clamp(56px,min(20cqw,13.8vh),116px)}}
