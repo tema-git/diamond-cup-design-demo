@@ -55,7 +55,6 @@ h1,h2,h3,.hero h1,.menu-group h3,.recipe-ticket h3,.ritual-copy h2{letter-spacin
 .menu-footnote{border-top:4px solid var(--navy);padding-top:24px}.menu-group{border-top-width:4px}
 .coffee-ribbon:focus-visible{outline:3px solid var(--mint);outline-offset:-6px}
 .coffee-ribbon:focus-within .ribbon-loop{animation-play-state:paused}
-@media(hover:hover){.coffee-ribbon:hover .ribbon-loop{animation-play-state:paused}}
 .visit-copy{container-type:inline-size;min-width:0}.visit-copy h2{font-size:clamp(27px,9.65cqw,64px);letter-spacing:.005em;line-height:1.12}.address-line{display:block;white-space:nowrap}
 .hero-copy,.ritual-copy,.visit-copy,.contact-copy{min-width:0}
 
@@ -73,3 +72,31 @@ h1,h2,h3,.hero h1,.menu-group h3,.recipe-ticket h3,.ritual-copy h2{letter-spacin
 .scroll-arrow{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;transform-origin:center;transform-box:view-box}
 .reset-icon,.close-icon{display:inline-block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle}.reset-icon{margin-left:12px}.close-icon{margin:auto}.dialog-close{display:grid;place-items:center}.search-field>button{display:grid;place-items:center}
 .ritual-copy{container-type:inline-size;width:100%}.ritual-copy h2{font-size:clamp(29px,10.6cqw,62px);line-height:1.14}.pause-line{display:block;white-space:nowrap}
+
+.drink-row{position:relative;isolation:isolate;transition:border-color .22s}
+.drink-row::before{content:'';position:absolute;inset:0 -12px;z-index:-1;border-radius:4px;background:linear-gradient(105deg,#68c0b34d,#68c0b324);opacity:0;transform:scaleX(.97);transition:opacity .22s,transform .28s;pointer-events:none}
+.drink-row.touch-highlight::before,.drink-row:focus-within::before{opacity:1;transform:scaleX(1)}
+.drink-row.touch-highlight,.drink-row:focus-within{border-bottom-color:#356e6466}
+.drink-row ::selection{background:transparent;color:#733b22}
+@media(hover:hover) and (pointer:fine){.drink-row:hover::before{opacity:1;transform:scaleX(1)}.drink-row:hover{border-bottom-color:#356e6466}}
+.hero-scene::after{content:'';position:absolute;inset:-30%;z-index:4;background:radial-gradient(ellipse at calc(50% + var(--pointer-x)*28%) calc(45% + var(--pointer-y)*28%),#ffffff45,transparent 48%);opacity:.3;transition:opacity .35s;pointer-events:none}
+.hero-scene.pointer-active::after,.hero-scene.touch-active::after{opacity:.85}
+.cup-body::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 15%,#ffffff2b 35%,transparent 55%);transform:translateX(calc(var(--pointer-x)*35px));pointer-events:none}
+.cup-back .cup-body::after{opacity:.45}
+.menu-decoration{rotate:var(--scroll-turn,0deg)}
+.cup-stage::before{transform:translate(calc(var(--pointer-x)*25px),calc(var(--pointer-y)*10px)) scale(var(--stage-ring-scale,1))}
+.wayfinding::before{background:radial-gradient(ellipse at calc(50% + var(--pointer-x)*46%) calc(50% + var(--pointer-y)*40%),#68c0b39c,transparent 65%)}
+.wayfinding-floor{overflow:hidden}
+.wayfinding-floor::before{inset:-35px;background-position:0 0;transform:translateX(calc(var(--pointer-x)*30px))}
+.ritual-illustration{isolation:isolate}
+.ritual-illustration::before{content:'';position:absolute;inset:14% 7%;border-radius:50%;z-index:-1;pointer-events:none;background:radial-gradient(ellipse,#68c0b329,transparent 68%);transform:translate(calc(var(--pointer-x)*38px),calc(var(--pointer-y)*24px));opacity:.3;transition:opacity .35s}
+.ritual-illustration.pointer-active::before,.ritual-illustration.touch-active::before{opacity:1}
+.hero-steam path,.ritual-steam,.cup-steam,.contact-steam{animation:coffee-breath 4.8s ease-in-out infinite;animation-play-state:paused}
+.hero-scene.is-in-view .hero-steam path,.ritual-illustration.is-in-view .ritual-steam,.cup-stage.is-in-view .cup-steam,.contact-copy.is-in-view .contact-steam{animation-play-state:running}
+.hero-scene.is-in-view .hero-bean{animation:coffee-bean-float 6s ease-in-out infinite;animation-play-state:running}
+.hero-scene .bean-two{animation-delay:-3s}
+.motion-paused .hero-steam path,.motion-paused .ritual-steam,.motion-paused .cup-steam,.motion-paused .contact-steam,.motion-paused .hero-bean{animation-play-state:paused!important}
+@keyframes coffee-breath{0%,100%{translate:0 3px;opacity:.42}50%{translate:0 -7px;opacity:.78}}
+@keyframes coffee-bean-float{0%,100%{translate:0 0}50%{translate:0 -9px}}
+@media(max-width:680px){.drink-row::before{inset:0 -8px}}
+@media(prefers-reduced-motion:reduce){.hero-steam path,.ritual-steam,.cup-steam,.contact-steam,.hero-bean{translate:none!important}.menu-decoration{rotate:0deg!important}.cup-stage::before{transform:none!important}.wayfinding-floor::before{transform:none!important}.hero-scene::after,.ritual-illustration::before{display:none}.drink-row::before{transform:none}}

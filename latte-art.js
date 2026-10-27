@@ -18,12 +18,17 @@
   const svgNS = 'http://www.w3.org/2000/svg';
   const maximumStrokes = 80;
   const maximumPoints = 15000;
+  const diffusionDuration = 1450;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const developingStrokes = new Set();
   const strokes = [];
   let brush = 12;
   let activeStroke = null;
   let activePointer = null;
   let pointsCount = 0;
   let paintFrame = 0;
+  let lastPaintTime = 0;
+  let milkInView = true;
   let bounds = null;
   let finished = false;
   let finishedAt = 0;
@@ -46,37 +51,50 @@
     cursor.classList.toggle('is-pouring', pouring);
     cursor.querySelector('.latte-cursor-ring').setAttribute('r', String(brush / 2 + 5));
   }
-  function flushPath() {
-    if (!activeStroke) return;
-    for (const layer of activeStroke.layers) {
-      layer.node.setAttribute('d', milkRibbon(activeStroke, layer.scale));
-    }
+  // The drawing stays vector based. Only recently poured milk develops; no
+  // permanent fluid loop or offscreen simulation runs once the wake has settled.
+  function developSamples(stroke, now, settled = false) {
+    return stroke.samples.map((point, index, samples) => {
+      const before = samples[Math.max(0, index - 1)];
+      const after = samples[Math.min(samples.length - 1, index + 1)];
+      const dx = after.x - before.x;
+      const dy = after.y - before.y;
+      const length = Math.hypot(dx, dy);
+      const tx = length > .01 ? dx / length : 1;
+      const ty = length > .01 ? dy / length : 0;
+      const age = settled || reducedMotion.matches ? 1 : Math.min(1, Math.max(0, (now - point.time) / diffusionDuration));
+      const spread = 1 - Math.pow(1 - age, 3);
+      const phase = stroke.phase + point.distance * .055;
+      // Unequal sides and a small downstream drift make milk mingle with crema
+      // instead of drawing a constant-width white marker line.
+      const drift = Math.sin(phase) * stroke.width * .16 * spread;
+      return {
+        x: point.x - ty * drift - tx * spread * .7,
+        y: point.y + tx * drift - ty * spread * .7,
+        nx: -ty, ny: tx, tx, ty,
+        radius: point.radius * (1 + spread * .45),
+        distance: point.distance,
+        spread,
+        phase
+      };
+    });
   }
-  function milkRibbon(stroke, scale) {
-    const samples = stroke.samples;
+  function milkRibbon(stroke, samples, layer) {
     const left = [];
     const right = [];
     const radii = [];
     const number = value => value.toFixed(2);
-    for (let index = 0; index < samples.length; index++) {
-      const point = samples[index];
-      const before = samples[Math.max(0, index - 1)];
-      const after = samples[Math.min(samples.length - 1, index + 1)];
-      let dx = after.x - before.x;
-      let dy = after.y - before.y;
-      if (Math.hypot(dx, dy) < .01) {
-        dx = after.x - point.x || point.x - before.x;
-        dy = after.y - point.y || point.y - before.y;
-      }
-      const length = Math.hypot(dx, dy) || 1;
+    for (const point of samples) {
       const taper = stroke.settled && stroke.distance > stroke.width * 3
-        ? .62 + .38 * Math.min(1, (stroke.distance - point.distance) / (stroke.width * 1.8))
+        ? .48 + .52 * Math.min(1, (stroke.distance - point.distance) / (stroke.width * 2.2))
         : 1;
-      const radius = point.radius * scale * taper;
-      const nx = samples.length === 1 ? 1 : -dy / length;
-      const ny = samples.length === 1 ? 0 : dx / length;
-      left.push({ x: point.x + nx * radius, y: point.y + ny * radius });
-      right.push({ x: point.x - nx * radius, y: point.y - ny * radius });
+      const uneven = 1 + Math.sin(point.phase * 1.7) * .14 + Math.sin(point.distance * .23 + stroke.phase) * .055;
+      const radius = Math.max(.15, point.radius * layer.scale * taper * uneven);
+      const displacement = layer.name === 'foam' ? Math.sin(point.phase * .8) * radius * .6 : 0;
+      const leftScale = 1 + Math.sin(point.phase) * .17;
+      const rightScale = 1 - Math.sin(point.phase * 1.3 + .8) * .16;
+      left.push({ x: point.x + point.nx * (radius * leftScale + displacement), y: point.y + point.ny * (radius * leftScale + displacement) });
+      right.push({ x: point.x - point.nx * (radius * rightScale - displacement), y: point.y - point.ny * (radius * rightScale - displacement) });
       radii.push(radius);
     }
     function edge(points, move) {
@@ -94,16 +112,82 @@
     const startRadius = number(radii[0]);
     return `${edge(left, 'M')}A${endRadius} ${endRadius} 0 0 0 ${number(right[last].x)} ${number(right[last].y)}${edge(right.reverse(), 'L')}A${startRadius} ${startRadius} 0 0 0 ${number(left[0].x)} ${number(left[0].y)}Z`;
   }
+  function milkEddies(stroke, samples) {
+    let curls = '';
+    let veins = '';
+    let lastDistance = -stroke.width * 2;
+    let curlIndex = 0;
+    const number = value => value.toFixed(2);
+    for (const point of samples) {
+      if (point.distance - lastDistance < 14 + stroke.width * 1.15 || point.distance < 4) continue;
+      lastDistance = point.distance;
+      const side = curlIndex++ % 2 ? -1 : 1;
+      const radius = point.radius * (.75 + point.spread * .7);
+      const tail = Math.min(27, 8 + stroke.width * .75) * (.55 + point.spread * .45);
+      const offset = (forward, outward) => `${number(point.x + point.tx * forward + point.nx * outward * side)} ${number(point.y + point.ty * forward + point.ny * outward * side)}`;
+      // A broad, curved tongue of milk folds back into the coffee. The narrow
+      // caramel seam gives the swirl depth without outlining the user's stroke.
+      curls += `M${offset(3, radius * .25)}C${offset(-tail * .2, radius * 1.1)} ${offset(-tail * .9, radius * 2.5)} ${offset(-tail * 1.3, radius * 1.3)}C${offset(-tail * 1.6, radius * .35)} ${offset(-tail * .65, radius * .18)} ${offset(-tail * .8, radius * .85)}C${offset(-tail * .5, radius * .45)} ${offset(-tail * .15, radius * .35)} ${offset(3, radius * .25)}Z`;
+      veins += `M${offset(-tail * .15, radius * .83)}C${offset(-tail * .65, radius * 1.8)} ${offset(-tail * 1.25, radius * 1.85)} ${offset(-tail * 1.13, radius * .95)}`;
+    }
+    return { curls, veins };
+  }
+  function flushPath(stroke = activeStroke, now = performance.now(), settled = false) {
+    if (!stroke) return;
+    const samples = developSamples(stroke, now, settled);
+    for (const layer of stroke.layers) layer.node.setAttribute('d', milkRibbon(stroke, samples, layer));
+    const eddies = milkEddies(stroke, samples);
+    stroke.curls.setAttribute('d', eddies.curls);
+    stroke.veins.setAttribute('d', eddies.veins);
+  }
+  function paintMilk(now) {
+    paintFrame = 0;
+    // A short 24 fps settling pass is enough for slow liquid diffusion. Pointer
+    // input still lands immediately, and only the last few strokes are animated.
+    if (now - lastPaintTime >= 1000 / 24) {
+      lastPaintTime = now;
+      for (const stroke of developingStrokes) {
+        flushPath(stroke, now);
+        if (reducedMotion.matches || now - stroke.lastPour >= diffusionDuration) developingStrokes.delete(stroke);
+      }
+    }
+    if (developingStrokes.size && !document.hidden && milkInView) paintFrame = requestAnimationFrame(paintMilk);
+    else strokesLayer.setAttribute('data-milk-state', 'settled');
+  }
   function schedulePaint() {
-    if (paintFrame) return;
-    paintFrame = requestAnimationFrame(() => {
-      paintFrame = 0;
-      flushPath();
-    });
+    if (document.hidden || !milkInView || reducedMotion.matches) {
+      flushPath(activeStroke, performance.now(), true);
+      settleMilk();
+      return;
+    }
+    if (activeStroke) {
+      developingStrokes.add(activeStroke);
+      // Keep a long drawing session bounded even when the user draws many tiny
+      // disconnected marks in quick succession.
+      while (developingStrokes.size > 4) {
+        const oldest = developingStrokes.values().next().value;
+        flushPath(oldest, performance.now(), true);
+        developingStrokes.delete(oldest);
+      }
+    }
+    if (!paintFrame && developingStrokes.size) {
+      strokesLayer.setAttribute('data-milk-state', 'settling');
+      paintFrame = requestAnimationFrame(paintMilk);
+    }
+  }
+  function settleMilk() {
+    if (paintFrame) cancelAnimationFrame(paintFrame);
+    paintFrame = 0;
+    for (const stroke of developingStrokes) flushPath(stroke, performance.now(), true);
+    developingStrokes.clear();
+    strokesLayer.setAttribute('data-milk-state', 'settled');
   }
   function endStroke() {
-    if (activeStroke) activeStroke.settled = true;
-    flushPath();
+    if (activeStroke) {
+      activeStroke.settled = true;
+      flushPath();
+      schedulePaint();
+    }
     activeStroke = null;
     updateControls();
   }
@@ -139,34 +223,53 @@
     const node = document.createElementNS(svgNS, 'g');
     node.setAttribute('class', 'latte-milk-stroke');
     const layers = [
-      { name: 'diffusion', scale: 1.9 },
-      { name: 'body', scale: 1.12 },
-      { name: 'foam', scale: .66 }
+      { name: 'diffusion', scale: 2.9 },
+      { name: 'wake', scale: 2.15 },
+      { name: 'blend', scale: 1.52 },
+      { name: 'body', scale: 1 },
+      { name: 'foam', scale: .43 }
     ].map(layer => {
       const part = document.createElementNS(svgNS, 'path');
       part.setAttribute('class', `latte-milk-path latte-milk-${layer.name}`);
       node.append(part);
-      return { node: part, scale: layer.scale };
+      return { node: part, name: layer.name, scale: layer.scale };
     });
+    const curls = document.createElementNS(svgNS, 'path');
+    curls.setAttribute('class', 'latte-milk-path latte-milk-curls');
+    const veins = document.createElementNS(svgNS, 'path');
+    veins.setAttribute('class', 'latte-milk-veins');
+    node.insertBefore(curls, layers[3].node);
+    node.append(veins);
     strokesLayer.append(node);
-    activeStroke = { node, layers, samples: [{ x, y, radius: brush * .56, distance: 0 }], width: brush, distance: 0, points: 1, x, y, settled: false };
+    const now = performance.now();
+    activeStroke = {
+      node, layers, curls, veins,
+      samples: [{ x, y, radius: brush * .7, distance: 0, time: now }],
+      width: brush, distance: 0, points: 1, x, y, settled: false,
+      lastPour: now, phase: strokes.length * 1.79
+    };
     strokes.push(activeStroke);
     pointsCount++;
     flushPath();
+    schedulePaint();
     updateControls();
     return true;
   }
   function extendStroke(x, y) {
     if (!activeStroke) return;
-    if (Math.hypot(x - activeStroke.x, y - activeStroke.y) < 1.2) return;
-    if (pointsCount >= maximumPoints || activeStroke.points >= 2200) {
+    if (Math.hypot(x - activeStroke.x, y - activeStroke.y) < 1.8) return;
+    if (pointsCount >= maximumPoints || activeStroke.points >= 1000) {
       endInput();
       announce('Штрих завершён. Можно добавить ещё один или нажать «Готово».');
       return;
     }
-    activeStroke.distance += Math.hypot(x - activeStroke.x, y - activeStroke.y);
-    const flow = .89 + Math.sin(activeStroke.distance / 19) * .1 + Math.sin(x * .065 + y * .045) * .055;
-    activeStroke.samples.push({ x, y, radius: activeStroke.width * .5 * flow, distance: activeStroke.distance });
+    const now = performance.now();
+    const distance = Math.hypot(x - activeStroke.x, y - activeStroke.y);
+    const speed = distance / Math.max(8, now - activeStroke.lastPour);
+    activeStroke.distance += distance;
+    const flow = 1.08 - Math.min(.35, speed * .13) + Math.sin(activeStroke.distance / 19) * .13 + Math.sin(x * .065 + y * .045) * .065;
+    activeStroke.samples.push({ x, y, radius: activeStroke.width * .65 * flow, distance: activeStroke.distance, time: now });
+    activeStroke.lastPour = now;
     activeStroke.points++;
     activeStroke.x = x;
     activeStroke.y = y;
@@ -175,6 +278,7 @@
   }
   function finishDrawing() {
     endInput();
+    settleMilk();
     if (!strokes.length) {
       announce('Сначала проведите по кофе, чтобы появился ваш узор.');
       return;
@@ -192,6 +296,7 @@
   }
   function resetDrawing(focusCanvas) {
     endInput();
+    settleMilk();
     strokesLayer.replaceChildren();
     strokes.length = 0;
     pointsCount = 0;
@@ -284,8 +389,14 @@
   canvas.addEventListener('blur', endInput);
   function pauseInput() {
     endInput();
-    if (paintFrame) cancelAnimationFrame(paintFrame);
-    paintFrame = 0;
+    settleMilk();
+  }
+  if ('IntersectionObserver' in window) {
+    const visibility = new IntersectionObserver(entries => {
+      milkInView = entries[0].isIntersecting;
+      if (!milkInView) pauseInput();
+    });
+    visibility.observe(canvas);
   }
   window.addEventListener('blur', pauseInput);
   window.addEventListener('pagehide', pauseInput);
@@ -311,6 +422,7 @@
     endInput();
     const removed = strokes.pop();
     if (!removed) return;
+    developingStrokes.delete(removed);
     removed.node.remove();
     pointsCount -= removed.points;
     updateControls();
@@ -322,6 +434,18 @@
     if (finished) resetDrawing(true);
     else finishDrawing();
   });
+  reducedMotion.addEventListener('change', () => {
+    if (reducedMotion.matches) settleMilk();
+  });
+  // One shared filter composites all pours at the size of the cup. Keeping the
+  // filter on this single bounded layer avoids one costly blur surface per mark.
+  const blendFilter = canvas.querySelector('#latte-milk-blend');
+  if (blendFilter) {
+    blendFilter.querySelector('feTurbulence')?.setAttribute('baseFrequency', '.035 .052');
+    blendFilter.querySelector('feDisplacementMap')?.setAttribute('scale', '3.3');
+    blendFilter.querySelector('feGaussianBlur')?.setAttribute('stdDeviation', '.55');
+  }
+  strokesLayer.setAttribute('data-milk-state', 'settled');
   positionCursor();
   updateControls();
 })();

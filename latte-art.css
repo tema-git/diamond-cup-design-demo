@@ -18,9 +18,13 @@
 .latte-drawing[data-finished=true] .latte-draw-cursor{opacity:0!important}
 .latte-draw-cursor.is-pouring .latte-cursor-ring{stroke-width:4}
 .latte-milk-path{stroke:none;pointer-events:none}
-.latte-milk-diffusion{fill:#eac99e;fill-opacity:.27}
-.latte-milk-body{fill:#f5e8cc;fill-opacity:.88}
-.latte-milk-foam{fill:#fff7e6;fill-opacity:.67}
+.latte-milk-diffusion{fill:#d8ad7b;fill-opacity:.13}
+.latte-milk-wake{fill:#ead1ab;fill-opacity:.21}
+.latte-milk-blend{fill:#efdbba;fill-opacity:.33}
+.latte-milk-body{fill:#f5e7cb;fill-opacity:.65}
+.latte-milk-foam{fill:#fff6e2;fill-opacity:.46}
+.latte-milk-curls{fill:#f2dfbe;fill-opacity:.47}
+.latte-milk-veins{fill:none;stroke:#9e643a;stroke-opacity:.23;stroke-width:.85;stroke-linecap:round;pointer-events:none}
 .latte-guide{pointer-events:none;fill:none;stroke:#fff8e9;stroke-width:2;stroke-dasharray:5 8;stroke-linecap:round;opacity:.8}
 
 .latte-result-seal{position:absolute;left:24px;top:24px;display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--cream);border:1px solid var(--navy);border-radius:4px;font-size:16px;font-weight:600;max-width:calc(100% - 48px);pointer-events:none}

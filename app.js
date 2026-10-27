@@ -198,6 +198,19 @@
   const menuPanel = document.querySelector('#menu-panel');
   const menuSearch = document.querySelector('#drink-search');
   const clearSearch = document.querySelector('#clear-search');
+  let touchedMenuRow = null;
+  function clearMenuTouch() {
+    if (touchedMenuRow) touchedMenuRow.classList.remove('touch-highlight');
+    touchedMenuRow = null;
+  }
+  menuPanel.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'touch') return;
+    clearMenuTouch();
+    touchedMenuRow = event.target.closest('.drink-row');
+    if (touchedMenuRow) touchedMenuRow.classList.add('touch-highlight');
+  }, {passive:true});
+  window.addEventListener('pointerup', clearMenuTouch, {passive:true});
+  window.addEventListener('pointercancel', clearMenuTouch, {passive:true});
   const categoryTabs = [...document.querySelectorAll('[data-category]')];
   const originalMenu = document.querySelector('#menu-original');
   let activeCategory = 'coffee';
@@ -206,6 +219,7 @@
   const escape = value => String(value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
   function renderMenu() {
     if (!menuData) return;
+    clearMenuTouch();
     const query = normalize(menuSearch.value.trim());
     const terms = query.split(/\s+/).filter(Boolean);
     const categories = query ? menuData.categories : menuData.categories.filter(category => category.id === activeCategory);
@@ -280,8 +294,12 @@
   // Pointer motion belongs to decorative layers; text and controls never move.
   function setupSectionMotion(selectors) {
     const fine = matchMedia('(hover: hover) and (pointer: fine)');
-    const scenes = selectors.map(selector => ({surface:document.querySelector(selector),x:0,y:0,tx:0,ty:0,frame:0,time:0,rect:null,visible:false}));
-    const allowed = () => fine.matches && !reducedMotion.matches && !document.hidden;
+    const scenes = selectors.map(selector => document.querySelector(selector)).filter(Boolean).map(surface => ({surface,x:0,y:0,tx:0,ty:0,frame:0,time:0,rect:null,visible:false}));
+    let windowFocused = document.hasFocus();
+    const allowed = () => fine.matches && !reducedMotion.matches && !document.hidden && windowFocused;
+    function syncPlayback() {
+      document.documentElement.classList.toggle('motion-paused', document.hidden || !windowFocused);
+    }
     function paint(scene) {
       scene.surface.style.setProperty('--pointer-x',scene.x.toFixed(4));
       scene.surface.style.setProperty('--pointer-y',scene.y.toFixed(4));
@@ -324,18 +342,24 @@
     if(window.IntersectionObserver) {
       const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
         const scene=scenes.find(item=>item.surface===entry.target);
-        scene.visible=entry.isIntersecting; if(!scene.visible)stop(scene);
+        scene.visible=entry.isIntersecting;
+        scene.surface.classList.toggle('is-in-view', scene.visible);
+        if(!scene.visible)stop(scene);
       }));
       scenes.forEach(scene=>observer.observe(scene.surface));
-    } else scenes.forEach(scene=>scene.visible=true);
-    const reset=()=>scenes.forEach(stop);
+    } else scenes.forEach(scene=>{scene.visible=true;scene.surface.classList.add('is-in-view');});
+    const reset=()=>{scenes.forEach(stop);clearMenuTouch();syncPlayback();};
     window.addEventListener('scroll',()=>scenes.forEach(scene=>scene.rect=null),{passive:true});
     window.addEventListener('resize',reset,{passive:true});
-    window.addEventListener('blur',reset); window.addEventListener('pagehide',reset);
+    window.addEventListener('blur',()=>{windowFocused=false;reset();});
+    window.addEventListener('focus',()=>{windowFocused=true;syncPlayback();});
+    window.addEventListener('pagehide',()=>{windowFocused=false;reset();});
+    window.addEventListener('pageshow',()=>{windowFocused=document.hasFocus();syncPlayback();});
     document.addEventListener('visibilitychange',reset);
     reducedMotion.addEventListener('change',reset); fine.addEventListener('change',reset);
+    syncPlayback();
   }
-  setupSectionMotion(['.hero','.coffee-ribbon','.menu-section','.pause-section','.barista-section','.latte-section','.visit-section','.contact-section']);
+  setupSectionMotion(['.hero','.hero-scene','.coffee-ribbon','.menu-section','.menu-heading','.pause-section','.ritual-illustration','.barista-section','.cup-stage','.latte-section','.visit-section','.wayfinding','.contact-section','.contact-copy']);
 
   // Two identical tracks make a continuous loop; stop it when it cannot be seen.
   const ribbon=document.querySelector('.coffee-ribbon');
@@ -381,6 +405,11 @@
       gsap.fromTo(route, {strokeDasharray:length,strokeDashoffset:length}, {strokeDashoffset:0,ease:'none',scrollTrigger:{trigger:'.ritual-layout',start:'top 90%',end:'center 45%',scrub:.6}});
       gsap.fromTo('.ritual-cup', {y:35,rotation:-8,svgOrigin:'365 208'}, {y:-15,rotation:8,svgOrigin:'365 208',ease:'none',scrollTrigger:{trigger:'.ritual-layout',start:'top bottom',end:'bottom top',scrub:.65}});
       gsap.fromTo('.recipe-ticket', {rotation:-4,y:22}, {rotation:0,y:0,ease:'none',scrollTrigger:{trigger:'.order-desk',start:'top 95%',end:'top 40%',scrub:.5}});
+      gsap.fromTo('.menu-decoration', {'--scroll-turn':'-18deg'}, {'--scroll-turn':'22deg',ease:'none',scrollTrigger:{trigger:'.menu-heading',start:'top bottom',end:'bottom top',scrub:.7}});
+      gsap.fromTo('.cup-stage', {'--stage-ring-scale':.84}, {'--stage-ring-scale':1.1,ease:'none',scrollTrigger:{trigger:'.barista-game',start:'top bottom',end:'bottom top',scrub:.8}});
+      const contactCup = document.querySelector('.contact-steam-art > path');
+      const contactLength = contactCup.getTotalLength();
+      gsap.fromTo(contactCup, {strokeDasharray:contactLength,strokeDashoffset:contactLength}, {strokeDashoffset:0,ease:'none',scrollTrigger:{trigger:'.contact-steam-art',start:'top 94%',end:'top 65%',scrub:.5}});
     });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshScroll);
     window.addEventListener('load', refreshScroll, {once:true});
