@@ -12,12 +12,12 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-diamond-mint-180.png?v=20261027-r2">
   <link rel="stylesheet" href="fonts.css">
   <link rel="stylesheet" href="style.css?v=20261027-mobile4">
-  <link rel="stylesheet" href="latte-art.css?v=20261027-art2">
+  <link rel="stylesheet" href="latte-art.css?v=20261027-art3">
   <script src="assets/vendor/gsap.min.js?v=3.15.0" defer></script>
   <script src="assets/vendor/ScrollTrigger.min.js?v=3.15.0" defer></script>
   <script src="menu-data.js?v=20261027-mobile4" defer></script>
   <script src="app.js?v=20261027-mobile4" defer></script>
-  <script src="latte-art.js?v=20261027-art2" defer></script>
+  <script src="latte-art.js?v=20261027-art3" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">К содержимому</a>
@@ -83,42 +83,50 @@
               <svg class="latte-tableware" viewBox="0 0 600 600" aria-hidden="true">
                 <defs>
                   <radialGradient id="latte-coffee-color" cx="45%" cy="43%" r="63%"><stop offset="0" stop-color="#bd8956"/><stop offset=".72" stop-color="#ad713e"/><stop offset=".91" stop-color="#c7925b"/><stop offset="1" stop-color="#7c4628"/></radialGradient>
-                  <radialGradient id="latte-saucer-color" cx="43%" cy="38%" r="65%"><stop offset=".68" stop-color="#fffdf7"/><stop offset=".84" stop-color="#eee7d9"/><stop offset=".92" stop-color="#fffdf7"/><stop offset="1" stop-color="#d8d6cc"/></radialGradient>
-                  <linearGradient id="latte-cup-color" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#fffefa"/><stop offset=".6" stop-color="#f6f1e7"/><stop offset="1" stop-color="#d7d3c9"/></linearGradient>
+                  <radialGradient id="latte-saucer-color" cx="43%" cy="38%" r="65%"><stop offset=".64" stop-color="#fffdf9"/><stop offset=".79" stop-color="#ded8cc"/><stop offset=".86" stop-color="#fffdf9"/><stop offset=".95" stop-color="#eee9e0"/><stop offset="1" stop-color="#c9c5ba"/></radialGradient>
+                  <linearGradient id="latte-cup-color" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ffffff"/><stop offset=".35" stop-color="#fffcf5"/><stop offset=".72" stop-color="#e5e0d5"/><stop offset="1" stop-color="#bebdb5"/></linearGradient>
+                  <filter id="latte-ceramic-shadow" x="-15%" y="-15%" width="140%" height="140%"><feGaussianBlur stdDeviation="7"/></filter>
                 </defs>
-                <ellipse cx="290" cy="317" rx="263" ry="260" fill="#151935" opacity=".12"/>
+                <ellipse cx="291" cy="318" rx="256" ry="253" fill="#233e35" opacity=".22" filter="url(#latte-ceramic-shadow)"/>
                 <circle cx="280" cy="300" r="258" fill="url(#latte-saucer-color)"/>
-                <circle cx="280" cy="300" r="239" fill="none" stroke="#d5d0c5" stroke-width="1.5"/>
-                <circle cx="280" cy="300" r="222" fill="none" stroke="#bdb9ae" opacity=".35" stroke-width="2"/>
                 <path d="M467 251c88-22 106 64 50 92-19 10-35 9-54 2l9-26c39 12 52-5 42-23-7-12-20-13-39-9Z" fill="#151935" opacity=".09" transform="translate(3 8)"/>
                 <path d="M467 245c88-22 106 64 50 92-19 10-35 9-54 2l9-26c39 12 52-5 42-23-7-12-20-13-39-9Z" fill="url(#latte-cup-color)" stroke="#d5d0c5" stroke-width="1.5"/>
-                <circle cx="283" cy="307" r="218" fill="#151935" opacity=".13"/>
+                <circle cx="285" cy="309" r="217" fill="#594f3f" opacity=".22" filter="url(#latte-ceramic-shadow)"/>
                 <circle cx="280" cy="300" r="216" fill="url(#latte-cup-color)"/>
-                <circle cx="280" cy="300" r="203" fill="#6c3e25"/>
+                <circle cx="280" cy="300" r="207" fill="#b9aa92"/>
+                <circle cx="280" cy="300" r="204" fill="#f8f0e2"/>
+                <circle cx="280" cy="300" r="201" fill="#6c3e25"/>
                 <circle cx="280" cy="300" r="200" fill="url(#latte-coffee-color)"/>
-                <circle cx="280" cy="300" r="192" fill="none" stroke="#e5bc81" stroke-width="4" opacity=".55"/>
-                <path d="M123 199a185 185 0 0 1 191-80" fill="none" stroke="#ffe5b5" stroke-width="3" stroke-linecap="round" opacity=".55"/>
-                <g fill="#edc693" opacity=".65"><circle cx="132" cy="232" r="3"/><circle cx="148" cy="201" r="2"/><circle cx="398" cy="169" r="3"/><circle cx="435" cy="352" r="2"/><circle cx="189" cy="456" r="3"/><circle cx="202" cy="465" r="1.5"/><circle cx="423" cy="383" r="3.5"/></g>
                 <g class="latte-spoon"><path d="M550 377c-17 0-22-35-17-54 2-9 6-13 10-13s9 4 11 13c5 19 3 54-4 54Z" fill="#151935" opacity=".13" transform="translate(4 4)"/><path d="M542 370v126c0 9 13 9 13 0l-5-126Z" fill="#c4ccc8" stroke="#a0ada9"/><ellipse cx="546" cy="337" rx="17" ry="35" fill="#eaf1eb" stroke="#a0ada9" stroke-width="2"/><path d="M542 316c-10 8-9 33-3 40" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/></g>
                 <g class="latte-beans" fill="#733b22" stroke="#feeee2" stroke-width="2.5"><ellipse cx="60" cy="470" rx="14" ry="22" transform="rotate(-35 60 470)" stroke="none"/><path d="M47 452c18 9 8 24 26 35" fill="none"/><ellipse cx="95" cy="505" rx="11" ry="18" transform="rotate(30 95 505)" stroke="none"/><path d="M101 490c-12 9 1 17-13 29" fill="none"/></g>
               </svg>
               <svg class="latte-drawing" id="latte-drawing" viewBox="0 0 400 400" role="application" tabindex="0" aria-label="Чашка для рисования молочной пеной" aria-describedby="latte-instructions latte-keyboard-help" data-input="keyboard" data-finished="false">
-                <defs><clipPath id="latte-drawing-clip"><circle cx="200" cy="200" r="198"/></clipPath></defs>
+                <defs>
+                  <clipPath id="latte-drawing-clip"><circle cx="200" cy="200" r="198"/></clipPath>
+                  <radialGradient id="latte-meniscus"><stop offset=".86" stop-color="#4c2913" stop-opacity="0"/><stop offset=".97" stop-color="#4c2913" stop-opacity=".08"/><stop offset="1" stop-color="#43240f" stop-opacity=".45"/></radialGradient>
+                  <radialGradient id="latte-surface-light" cx="28%" cy="23%" r="75%"><stop stop-color="#fff9e9" stop-opacity=".14"/><stop offset=".55" stop-color="#fff9e9" stop-opacity="0"/><stop offset="1" stop-color="#54311a" stop-opacity=".07"/></radialGradient>
+                  <filter id="latte-milk-blend" filterUnits="userSpaceOnUse" x="0" y="0" width="400" height="400" color-interpolation-filters="sRGB">
+                    <feTurbulence type="fractalNoise" baseFrequency=".045 .065" numOctaves="2" seed="8" result="milk-grain"/>
+                    <feDisplacementMap in="SourceGraphic" in2="milk-grain" scale="2.4" xChannelSelector="R" yChannelSelector="G"/>
+                    <feGaussianBlur stdDeviation=".32"/>
+                  </filter>
+                </defs>
                 <g clip-path="url(#latte-drawing-clip)">
-                  <circle cx="200" cy="200" r="200" fill="transparent"/>
+                  <image href="assets/latte-crema-surface.webp" width="400" height="400" preserveAspectRatio="xMidYMid slice" aria-hidden="true"/>
+                  <g id="latte-strokes" filter="url(#latte-milk-blend)"></g>
+                  <circle cx="200" cy="200" r="200" fill="url(#latte-surface-light)" pointer-events="none"/>
+                  <circle cx="200" cy="200" r="200" fill="url(#latte-meniscus)" pointer-events="none"/>
                   <g class="latte-guide" id="latte-guide" hidden><path d="M200 293C182 276 102 218 102 160c0-64 80-75 98-14 18-61 98-50 98 14 0 58-80 116-98 133Z"/></g>
-                  <g id="latte-strokes"></g>
                   <circle class="latte-focus-ring" cx="200" cy="200" r="193" fill="none" stroke="#151935" stroke-width="4" aria-hidden="true"/>
                   <g class="latte-draw-cursor" id="latte-draw-cursor" transform="translate(200 200)" aria-hidden="true"><circle class="latte-cursor-ring" r="11" fill="none" stroke="#151935" stroke-width="2"/><circle r="2" fill="#fff8e9"/></g>
                 </g>
               </svg>
             </div>
-            <p class="latte-scene-caption">Рисуйте пальцем или мышью по кофе</p>
             <div class="latte-result-seal" id="latte-result-seal" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg>Ваш авторский капучино</div>
           </div>
           <div class="latte-controls">
             <h3>Пенка — ваш холст.</h3>
-            <p class="latte-instructions" id="latte-instructions">Проведите пальцем или мышью по кофе. Нарисуйте свой узор или обведите сердце по контуру.</p>
+            <p class="latte-instructions" id="latte-instructions">Нарисуйте свой узор или обведите сердце по контуру.</p>
             <fieldset class="latte-brushes"><legend>Толщина молочной линии</legend><div class="latte-brush-options"><button type="button" data-latte-brush="5" aria-pressed="false"><span class="latte-brush-dot" style="--brush-dot:5px" aria-hidden="true"></span>Тонкая</button><button type="button" data-latte-brush="12" aria-pressed="true"><span class="latte-brush-dot" style="--brush-dot:9px" aria-hidden="true"></span>Мягкая</button><button type="button" data-latte-brush="22" aria-pressed="false"><span class="latte-brush-dot" style="--brush-dot:14px" aria-hidden="true"></span>Пышная</button></div></fieldset>
             <div class="latte-tools">
               <button class="latte-tool latte-guide-button" id="latte-guide-toggle" type="button" aria-pressed="false" aria-controls="latte-guide"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20S3 14.5 3 8.5C3 3 10 2 12 7c2-5 9-4 9 1.5C21 14.5 12 20 12 20Z"/></svg>Контур сердца</button>
@@ -127,7 +135,7 @@
             </div>
             <p class="latte-status" id="latte-status" role="status" aria-live="polite" aria-atomic="true">Чашка готова для первого штриха. Здесь нет оценок — только ваш рисунок.</p>
             <button class="button primary latte-finish" id="latte-finish" type="button" disabled><span id="latte-finish-label">Готово</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path id="latte-finish-icon" d="m5 12 4 4L19 6"/></svg></button>
-            <details class="latte-keyboard"><summary>Как рисовать с клавиатуры</summary><p id="latte-keyboard-help">Нажмите на чашку или выберите её клавишей Tab. Стрелки перемещают кисть, <kbd>Пробел</kbd> включает и выключает линию. <kbd>Shift</kbd> со стрелкой — крупный шаг, <kbd>Enter</kbd> — готово, <kbd>Escape</kbd> — остановить линию.</p></details>
+            <p class="visually-hidden" id="latte-keyboard-help">Стрелки перемещают кисть, Пробел включает и выключает линию. Shift со стрелкой — крупный шаг, Enter — готово, Escape — остановить линию.</p>
           </div>
         </div>
       </div>

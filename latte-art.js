@@ -47,7 +47,52 @@
     cursor.querySelector('.latte-cursor-ring').setAttribute('r', String(brush / 2 + 5));
   }
   function flushPath() {
-    if (activeStroke) activeStroke.node.setAttribute('d', activeStroke.path);
+    if (!activeStroke) return;
+    for (const layer of activeStroke.layers) {
+      layer.node.setAttribute('d', milkRibbon(activeStroke, layer.scale));
+    }
+  }
+  function milkRibbon(stroke, scale) {
+    const samples = stroke.samples;
+    const left = [];
+    const right = [];
+    const radii = [];
+    const number = value => value.toFixed(2);
+    for (let index = 0; index < samples.length; index++) {
+      const point = samples[index];
+      const before = samples[Math.max(0, index - 1)];
+      const after = samples[Math.min(samples.length - 1, index + 1)];
+      let dx = after.x - before.x;
+      let dy = after.y - before.y;
+      if (Math.hypot(dx, dy) < .01) {
+        dx = after.x - point.x || point.x - before.x;
+        dy = after.y - point.y || point.y - before.y;
+      }
+      const length = Math.hypot(dx, dy) || 1;
+      const taper = stroke.settled && stroke.distance > stroke.width * 3
+        ? .62 + .38 * Math.min(1, (stroke.distance - point.distance) / (stroke.width * 1.8))
+        : 1;
+      const radius = point.radius * scale * taper;
+      const nx = samples.length === 1 ? 1 : -dy / length;
+      const ny = samples.length === 1 ? 0 : dx / length;
+      left.push({ x: point.x + nx * radius, y: point.y + ny * radius });
+      right.push({ x: point.x - nx * radius, y: point.y - ny * radius });
+      radii.push(radius);
+    }
+    function edge(points, move) {
+      let path = `${move}${number(points[0].x)} ${number(points[0].y)}`;
+      for (let index = 1; index < points.length; index++) {
+        const previous = points[index - 1];
+        const point = points[index];
+        path += `Q${number(previous.x)} ${number(previous.y)} ${number((previous.x + point.x) / 2)} ${number((previous.y + point.y) / 2)}`;
+      }
+      const last = points[points.length - 1];
+      return `${path}L${number(last.x)} ${number(last.y)}`;
+    }
+    const last = samples.length - 1;
+    const endRadius = number(radii[last]);
+    const startRadius = number(radii[0]);
+    return `${edge(left, 'M')}A${endRadius} ${endRadius} 0 0 0 ${number(right[last].x)} ${number(right[last].y)}${edge(right.reverse(), 'L')}A${startRadius} ${startRadius} 0 0 0 ${number(left[0].x)} ${number(left[0].y)}Z`;
   }
   function schedulePaint() {
     if (paintFrame) return;
@@ -57,6 +102,7 @@
     });
   }
   function endStroke() {
+    if (activeStroke) activeStroke.settled = true;
     flushPath();
     activeStroke = null;
     updateControls();
@@ -90,15 +136,23 @@
       announce('В чашке уже много молочной пены. Нажмите «Готово» или отмените часть штрихов.');
       return false;
     }
-    const node = document.createElementNS(svgNS, 'path');
-    const path = `M${x.toFixed(2)} ${y.toFixed(2)}l.01 0`;
-    node.setAttribute('class', 'latte-milk-path');
-    node.setAttribute('stroke-width', String(brush));
-    node.setAttribute('d', path);
+    const node = document.createElementNS(svgNS, 'g');
+    node.setAttribute('class', 'latte-milk-stroke');
+    const layers = [
+      { name: 'diffusion', scale: 1.9 },
+      { name: 'body', scale: 1.12 },
+      { name: 'foam', scale: .66 }
+    ].map(layer => {
+      const part = document.createElementNS(svgNS, 'path');
+      part.setAttribute('class', `latte-milk-path latte-milk-${layer.name}`);
+      node.append(part);
+      return { node: part, scale: layer.scale };
+    });
     strokesLayer.append(node);
-    activeStroke = { node, path, points: 1, x, y };
+    activeStroke = { node, layers, samples: [{ x, y, radius: brush * .56, distance: 0 }], width: brush, distance: 0, points: 1, x, y, settled: false };
     strokes.push(activeStroke);
     pointsCount++;
+    flushPath();
     updateControls();
     return true;
   }
@@ -110,7 +164,9 @@
       announce('Штрих завершён. Можно добавить ещё один или нажать «Готово».');
       return;
     }
-    activeStroke.path += `L${x.toFixed(2)} ${y.toFixed(2)}`;
+    activeStroke.distance += Math.hypot(x - activeStroke.x, y - activeStroke.y);
+    const flow = .89 + Math.sin(activeStroke.distance / 19) * .1 + Math.sin(x * .065 + y * .045) * .055;
+    activeStroke.samples.push({ x, y, radius: activeStroke.width * .5 * flow, distance: activeStroke.distance });
     activeStroke.points++;
     activeStroke.x = x;
     activeStroke.y = y;

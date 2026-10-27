@@ -17,9 +17,12 @@
 .latte-drawing[data-input=keyboard]:focus .latte-draw-cursor{opacity:1}
 .latte-drawing[data-finished=true] .latte-draw-cursor{opacity:0!important}
 .latte-draw-cursor.is-pouring .latte-cursor-ring{stroke-width:4}
-.latte-milk-path{fill:none;stroke:#fff8e9;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.latte-milk-path{stroke:none;pointer-events:none}
+.latte-milk-diffusion{fill:#eac99e;fill-opacity:.27}
+.latte-milk-body{fill:#f5e8cc;fill-opacity:.88}
+.latte-milk-foam{fill:#fff7e6;fill-opacity:.67}
 .latte-guide{pointer-events:none;fill:none;stroke:#fff8e9;stroke-width:2;stroke-dasharray:5 8;stroke-linecap:round;opacity:.8}
-.latte-scene-caption{position:absolute;bottom:18px;left:22px;right:22px;text-align:center;font-size:14px;color:var(--navy);pointer-events:none}
+
 .latte-result-seal{position:absolute;left:24px;top:24px;display:flex;align-items:center;gap:9px;padding:10px 14px;background:var(--cream);border:1px solid var(--navy);border-radius:4px;font-size:16px;font-weight:600;max-width:calc(100% - 48px);pointer-events:none}
 .latte-result-seal svg{width:22px;height:22px;flex-shrink:0}
 .latte-controls{padding:42px;background:var(--cream);display:flex;flex-direction:column;min-width:0;border-left:1px solid var(--navy)}
@@ -42,17 +45,17 @@
 .latte-finish{width:100%;margin-top:14px;border:1px solid var(--navy);font-size:17px;gap:18px;min-height:58px}
 .latte-finish::selection,.latte-finish ::selection{background:transparent;color:#482613}
 .latte-finish svg{width:24px;height:24px;flex-shrink:0}
-.latte-keyboard{margin-top:22px;font-size:14px}
-.latte-keyboard summary{font-size:16px;cursor:pointer;min-height:32px;line-height:1.5;text-decoration:underline;text-underline-offset:4px}
-.latte-keyboard p{margin-top:8px;line-height:1.65}
-.latte-keyboard kbd{font:inherit;font-weight:600}
+
+
+
+
 .latte-controls ::selection{background:transparent;color:var(--coffee)}
 .latte-brush-options button[aria-pressed=true]::selection,.latte-brush-options button[aria-pressed=true] ::selection{color:var(--mint)}
-.latte-tool:focus-visible,.latte-brush-options button:focus-visible,.latte-keyboard summary:focus-visible{outline:3px solid var(--coffee);outline-offset:4px}
+.latte-tool:focus-visible,.latte-brush-options button:focus-visible{outline:3px solid var(--coffee);outline-offset:4px}
 @media(min-width:901px) and (max-width:1150px){.latte-controls{padding:30px}.latte-brush-options button{padding-inline:10px;gap:7px}.latte-tool{padding-inline:9px;gap:7px}.latte-instructions{font-size:17px}}
-@media(max-width:900px){.latte-heading{align-items:flex-start;flex-direction:column;gap:24px}.latte-heading>p{max-width:560px}.latte-workspace{grid-template-columns:minmax(0,1fr) minmax(0,.9fr)}.latte-controls{padding:28px 24px}.latte-brush-options{gap:7px}.latte-brush-options button{font-size:16px;padding-inline:9px;gap:7px;min-width:88px}.latte-controls h3{font-size:31px}.latte-instructions{font-size:17px}.latte-tools{grid-template-columns:1fr}.latte-guide-button{grid-column:auto}.latte-scene-caption{bottom:20px}.latte-cup{align-self:center}.latte-result-seal{font-size:14px;left:14px;top:14px;max-width:calc(100% - 28px);padding:9px 11px}}
-@media(max-width:680px){.latte-section{padding-block:64px}.latte-heading{margin-bottom:28px;gap:22px}.latte-heading h2{font-size:clamp(38px,10.8vw,47px)}.latte-heading>p{font-size:18px}.latte-workspace{display:flex;flex-direction:column}.latte-scene{min-height:0}.latte-cup{width:100%;max-width:520px}.latte-controls{border-left:0;border-top:1px solid var(--navy);padding:28px 22px}.latte-controls h3{font-size:30px}.latte-instructions{font-size:18px}.latte-tools{grid-template-columns:1fr 1fr}.latte-guide-button{grid-column:1/-1}.latte-brush-options button{min-width:0;padding:10px 8px;gap:7px}.latte-status{min-height:75px;margin-top:20px}.latte-keyboard{margin-top:20px}.latte-scene-caption{bottom:10px;left:12px;right:12px;font-size:14px}.latte-result-seal{font-size:14px;padding:8px 11px;top:12px;left:12px}.latte-result-seal svg{width:18px;height:18px}}
-@media(max-width:350px){.latte-controls{padding:25px 16px}.latte-brush-options{gap:5px}.latte-brush-options button{gap:5px}.latte-tool{gap:7px;padding-inline:8px}.latte-scene-caption{bottom:6px;font-size:14px}.latte-result-seal{max-width:calc(100% - 24px)}}
+@media(max-width:900px){.latte-heading{align-items:flex-start;flex-direction:column;gap:24px}.latte-heading>p{max-width:560px}.latte-workspace{grid-template-columns:minmax(0,1fr) minmax(0,.9fr)}.latte-controls{padding:28px 24px}.latte-brush-options{gap:7px}.latte-brush-options button{font-size:16px;padding-inline:9px;gap:7px;min-width:88px}.latte-controls h3{font-size:31px}.latte-instructions{font-size:17px}.latte-tools{grid-template-columns:1fr}.latte-guide-button{grid-column:auto}.latte-cup{align-self:center}.latte-result-seal{font-size:14px;left:14px;top:14px;max-width:calc(100% - 28px);padding:9px 11px}}
+@media(max-width:680px){.latte-section{padding-block:64px}.latte-heading{margin-bottom:28px;gap:22px}.latte-heading h2{font-size:clamp(38px,10.8vw,47px)}.latte-heading>p{font-size:18px}.latte-workspace{display:flex;flex-direction:column}.latte-scene{min-height:0}.latte-cup{width:100%;max-width:520px}.latte-controls{border-left:0;border-top:1px solid var(--navy);padding:28px 22px}.latte-controls h3{font-size:30px}.latte-instructions{font-size:18px}.latte-tools{grid-template-columns:1fr 1fr}.latte-guide-button{grid-column:1/-1}.latte-brush-options button{min-width:0;padding:10px 8px;gap:7px}.latte-status{min-height:75px;margin-top:20px}.latte-result-seal{font-size:14px;padding:8px 11px;top:12px;left:12px}.latte-result-seal svg{width:18px;height:18px}}
+@media(max-width:350px){.latte-controls{padding:25px 16px}.latte-brush-options{gap:5px}.latte-brush-options button{gap:5px}.latte-tool{gap:7px;padding-inline:8px}.latte-result-seal{max-width:calc(100% - 24px)}}
 @media(prefers-reduced-motion:reduce){.latte-scene::before,.latte-scene::after,.latte-spoon,.latte-beans{transform:none!important}}
 
 .latte-scene ::selection{background:transparent;color:var(--navy)}.latte-result-seal::selection,.latte-result-seal ::selection{color:var(--coffee)}
