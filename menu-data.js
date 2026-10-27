@@ -1,6 +1,5 @@
 /* Diamond Cup menu, transcribed from the brand's October 2026 menu artwork. */
 window.DIAMOND_MENU = {
-  updated: 'Октябрь 2026',
   volumes: { S: 200, M: 300, L: 400, XL: 650 },
   categories: [
     {

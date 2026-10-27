@@ -250,7 +250,7 @@
     if (query) {menuPanel.removeAttribute('aria-labelledby');menuPanel.setAttribute('aria-label','Результаты поиска по всему меню');}
     else {menuPanel.removeAttribute('aria-label');menuPanel.setAttribute('aria-labelledby', `tab-${activeCategory}`);}
     originalMenu.href = `assets/menu/${menuFiles[activeCategory]}-october-2026.png`;
-    originalMenu.setAttribute('aria-label', `Открыть оригинал: ${category.label.toLowerCase()}, октябрь 2026`);
+    originalMenu.setAttribute('aria-label', `Открыть оригинал: ${category.label.toLowerCase()}`);
     refreshScroll();
   }
   function setCategory(tab) {
