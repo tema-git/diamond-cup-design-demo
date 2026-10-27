@@ -105,7 +105,7 @@
     const expected = order.steps[stepIndex];
     if (id !== expected) {
       gameFeedback.textContent = `${ingredients[id].label} пока подождёт. Сейчас нужен следующий ингредиент: ${ingredients[expected].label.toLowerCase()}.`;
-      if (!reducedMotion.matches && button.animate) button.animate([{transform:'translateX(0)'},{transform:'translateX(-3px)'},{transform:'translateX(3px)'},{transform:'translateX(0)'}], {duration:180,easing:'ease-out'});
+      if (button.animate) button.animate([{opacity:1},{opacity:.45},{opacity:1}], {duration:180,easing:'ease-out'});
       return;
     }
     addLayer(id);
@@ -193,6 +193,91 @@
   document.querySelector('#form-submit').disabled = false;
   window.addEventListener('pagehide', () => contactForm.reset());
 
+  const menuData = window.DIAMOND_MENU;
+  const menuPanel = document.querySelector('#menu-panel');
+  const menuSearch = document.querySelector('#drink-search');
+  const clearSearch = document.querySelector('#clear-search');
+  const categoryTabs = [...document.querySelectorAll('[data-category]')];
+  const originalMenu = document.querySelector('#menu-original');
+  let activeCategory = 'coffee';
+  const menuFiles = {coffee:'coffee', tea:'tea', cold:'cold'};
+  const normalize = value => value.toLocaleLowerCase('ru').replace(/ё/g,'е').replace(/[–—-]/g,' ');
+  const escape = value => String(value).replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+  function renderMenu() {
+    if (!menuData) return;
+    const query = normalize(menuSearch.value.trim());
+    const terms = query.split(/\s+/).filter(Boolean);
+    const categories = query ? menuData.categories : menuData.categories.filter(category => category.id === activeCategory);
+    let count = 0;
+    const groups = [];
+    for (const category of categories) {
+      for (const section of category.sections) {
+        const items = section.items.filter(item => {
+          const haystack = normalize([item.name,item.description || '',item.note || ''].join(' '));
+          return terms.every(term => haystack.includes(term));
+        });
+        if (!items.length) continue;
+        count += items.length;
+        const title = query ? `${category.id === 'coffee' ? 'Кофе' : category.id === 'tea' ? 'Не кофе' : 'Холодное'} · ${section.title}` : section.title;
+        const sizes = section.sizes;
+        const rows = items.map(item => {
+          const isEspresso = item.name.startsWith('Эспрессо (');
+          const prices = sizes.map(size => {
+            const price = item.prices[size];
+            const volume = isEspresso ? 40 : menuData.volumes[size];
+            return price === undefined ? `<span class="drink-price unavailable"><span class="visually-hidden">Размер ${size} отсутствует</span><span aria-hidden="true">—</span></span>` : `<span class="drink-price${sizes.length === 1 ? ' single-price' : ''}">${sizes.length === 1 ? `<small class="price-volume">${volume} мл</small>` : `<span class="visually-hidden">${volume} мл: </span>`}<span>${price}<span class="price-unit" aria-hidden="true"> ₽</span><span class="visually-hidden"> рублей</span></span></span>`;
+          }).join('');
+          return `<div class="drink-row"><div class="drink-main"><p class="drink-name">${escape(item.name)}${item.isNew ? '<span class="new-badge">Новинка</span>' : ''}</p><div class="drink-prices">${prices}</div></div>${item.note ? `<p class="drink-note">${escape(item.note)}</p>` : ''}${item.description ? `<p class="drink-description">${escape(item.description)}</p>` : ''}</div>`;
+        }).join('');
+        groups.push(`<section class="menu-group" aria-label="${escape(title)}"><div class="menu-group-header"><h3>${escape(title)}</h3><div class="menu-sizes${sizes.length === 1 ? ' single-size' : ''}" aria-hidden="true">${sizes.map(size => `<span>${size}<small>${menuData.volumes[size]} мл</small></span>`).join('')}</div></div><div class="drink-list">${rows}</div></section>`);
+      }
+    }
+    menuPanel.innerHTML = groups.join('');
+    if (!count) {
+      const empty = document.createElement('div');
+      empty.className = 'menu-empty';
+      const title = document.createElement('h3'); title.textContent = 'Пока не нашли такой напиток';
+      const copy = document.createElement('p'); copy.textContent = 'Попробуйте другое название или вернитесь к полному меню.';
+      const reset = document.createElement('button'); reset.type = 'button'; reset.textContent = 'Показать меню';
+      reset.addEventListener('click', () => { menuSearch.value = ''; renderMenu(); menuSearch.focus({preventScroll:true}); });
+      empty.append(title,copy,reset); menuPanel.append(empty);
+    }
+    clearSearch.hidden = !query;
+    originalMenu.hidden = Boolean(query);
+    const category = menuData.categories.find(category => category.id === activeCategory);
+    document.querySelector('#menu-status').textContent = `${query ? 'Поиск по всему меню' : category.label} · позиций: ${count}`;
+    if (query) {menuPanel.removeAttribute('aria-labelledby');menuPanel.setAttribute('aria-label','Результаты поиска по всему меню');}
+    else {menuPanel.removeAttribute('aria-label');menuPanel.setAttribute('aria-labelledby', `tab-${activeCategory}`);}
+    originalMenu.href = `assets/menu/${menuFiles[activeCategory]}-october-2026.png`;
+    originalMenu.setAttribute('aria-label', `Открыть оригинал: ${category.label.toLowerCase()}, октябрь 2026`);
+    refreshScroll();
+  }
+  function setCategory(tab) {
+    activeCategory = tab.dataset.category;
+    menuSearch.value = '';
+    for (const item of categoryTabs) {
+      const selected = item === tab;
+      item.setAttribute('aria-selected', String(selected));
+      item.tabIndex = selected ? 0 : -1;
+    }
+    renderMenu();
+  }
+  for (const [index,tab] of categoryTabs.entries()) {
+    tab.addEventListener('click', () => setCategory(tab));
+    tab.addEventListener('keydown', event => {
+      let next = index;
+      if (event.key === 'ArrowRight') next = (index + 1) % categoryTabs.length;
+      else if (event.key === 'ArrowLeft') next = (index - 1 + categoryTabs.length) % categoryTabs.length;
+      else if (event.key === 'Home') next = 0;
+      else if (event.key === 'End') next = categoryTabs.length - 1;
+      else return;
+      event.preventDefault(); setCategory(categoryTabs[next]); categoryTabs[next].focus({preventScroll:true});
+    });
+  }
+  menuSearch.addEventListener('input', renderMenu);
+  clearSearch.addEventListener('click', () => { menuSearch.value = ''; renderMenu(); menuSearch.focus({preventScroll:true}); });
+  renderMenu();
+
   // Pointer motion belongs to decorative layers; text and controls never move.
   function setupSectionMotion(selectors) {
     const fine = matchMedia('(hover: hover) and (pointer: fine)');
@@ -251,7 +336,7 @@
     document.addEventListener('visibilitychange',reset);
     reducedMotion.addEventListener('change',reset); fine.addEventListener('change',reset);
   }
-  setupSectionMotion(['.hero','.coffee-ribbon','.pause-section','.barista-section','.visit-section','.contact-section']);
+  setupSectionMotion(['.hero','.coffee-ribbon','.menu-section','.pause-section','.barista-section','.visit-section','.contact-section']);
 
   // Two identical tracks make a continuous loop; stop it when it cannot be seen.
   const ribbon=document.querySelector('.coffee-ribbon');
